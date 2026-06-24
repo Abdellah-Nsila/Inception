@@ -3,7 +3,7 @@ Broaden your system administration skills by working with Docker. In this projec
 
 ## Table of Contents
 - [Chapter 1: DevOps](#chapter-1-devops)
-	- [Defenition](#defenetion)
+	- [Defenition](#defenition)
 ---
 
 ## Chapter 1 : DevOps

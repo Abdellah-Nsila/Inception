@@ -2,8 +2,8 @@
 Broaden your system administration skills by working with Docker. In this project, you'll set up a complete infrastructure using Docker Compose, creating and managing multiple containerized services including NGINX with SSL/TLS, WordPress with php-fpm, and MariaDB. You'll gain hands-on experience with containerization, networking, volume management, and secure web service deployment within your own personal virtual machine. 
 
 ## Table of Contents
-- [Chapter 1: DevOps](chapter-1-devops)
-	- [Defenition](defenetion)
+- [Chapter 1: DevOps](#chapter-1-devops)
+	- [Defenition](#defenetion)
 ---
 
 ## Chapter 1 : DevOps

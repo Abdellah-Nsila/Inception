@@ -150,6 +150,8 @@ While namespaces hide things, Cgroups restrict things. They allow the host kerne
 
 #### Summary: The Lifecycle of docker run
 
+![Container creation lifecycle](assets/container_creation_lifecycle.png)
+
 When you execute a command, here is the chain reaction:
 
 ```Plaintext
@@ -175,6 +177,10 @@ When you execute a command, here is the chain reaction:
 >	docker top <container_name>
 > ```
 
+#### Conclusion
+
+Docker simplifies software development using containers that share the host’s kernel, unlike virtual machines that run their own OS. Containers rely on key Linux features—namespaces and control groups (cgroups)—to ensure isolation and efficient resource management. Namespaces isolate system resources, while cgroups limit resource usage to prevent overloading.
+
 ## Chapter 3 :
 
 
@@ -182,5 +188,12 @@ When you execute a command, here is the chain reaction:
 
 
 ## Chapter 5 :
+
+
+## Recourses
+
+[Docker 101: The Docker Components](https://www.sysdig.com/learn-cloud-native/docker-101-the-docker-components)
+
+[How does Docker really work under the hood? — A dive into Docker’s internals](https://medium.com/@kuninoto/how-does-docker-really-work-under-the-hood-a-dive-into-dockers-internals-2fef63f7c9bb)
 
 

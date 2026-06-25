@@ -92,7 +92,12 @@ Broaden your system administration skills by working with Docker. In this projec
 
 ### How does Docker really work under the hood?
 
-![Docker under the hood](assets/docker_under_the_hood.jpeg)
+<!-- ![Docker under the hood](assets/docker_under_the_hood.jpeg) -->
+
+<p align="center">
+  <img src="./assets/docker_under_the_hood.jpeg" alt="Docker under the hood">
+</p>
+
 
 #### Layer 1: The User Interface
 

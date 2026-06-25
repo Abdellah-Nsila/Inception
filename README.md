@@ -28,6 +28,8 @@ Broaden your system administration skills by working with Docker. In this projec
 
 ## Chapter 2 : Docker Foundations
 
+![Docker Architecture](assets/docker-architecture.webp)
+
 ### Defenition:
 
 - Docker is an open source platform that automates the deployment of applications inside software containers. It allows developers to package their applications and dependencies into a single container that can be deployed quickly and reliably across different computing environments. Docker containers provide an efficient way to package, distribute, and run applications on any infrastructure, from on-premise data centers to public clouds.
@@ -89,6 +91,8 @@ Broaden your system administration skills by working with Docker. In this projec
 - Portability: High (runs consistently on any host running a compatible container engine).
 
 ### How does Docker really work under the hood?
+
+![Docker under the hood](assets/docker_under_the_hood.jpeg)
 
 #### Layer 1: The User Interface
 
@@ -164,6 +168,12 @@ When you execute a command, here is the chain reaction:
                                                ▼
                                         [Linux Kernel] (Launches isolated process)
 ```
+
+> [!NOTE]
+> As I said, a container is a process like any other but when created it receives special configurations. So just like any process, it has a Process ID (PID) and a Parent Process ID (PPID) — we can find them with the following command:
+> ```bash
+>	docker top <container_name>
+> ```
 
 ## Chapter 3 :
 

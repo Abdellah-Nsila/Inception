@@ -201,4 +201,4 @@ Docker simplifies software development using containers that share the host’s 
 
 [How does Docker really work under the hood? — A dive into Docker’s internals](https://medium.com/@kuninoto/how-does-docker-really-work-under-the-hood-a-dive-into-dockers-internals-2fef63f7c9bb)
 
-
+[How Docker Containers Work Under the Hood: Namespaces and Cgroups](https://atlantbh.com/blog/how-docker-containers-work-under-the-hood-namespaces-and-cgroups/)

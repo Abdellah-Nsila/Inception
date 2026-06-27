@@ -168,5 +168,5 @@ volumes:
 
 ---
 
-*Reference built for Inception 42 — 42 School project.*
+*Reference built for Inception 42 — 42 School project:* 
 [docker_cheatsheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf)

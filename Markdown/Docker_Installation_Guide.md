@@ -99,18 +99,18 @@ sudo apt update
 
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+> [!NOTE]
+> Why? This installs the entire modern containerization engine:
 
-Why? This installs the entire modern containerization engine:
+`docker-ce`: The core Docker Community Edition daemon (dockerd), which handles container management.
 
-docker-ce: The core Docker Community Edition daemon (dockerd), which handles container management.
+`docker-ce-cli`: The command-line interface tool (docker) that allows you to talk to the daemon.
 
-docker-ce-cli: The command-line interface tool (docker) that allows you to talk to the daemon.
+`containerd.io`: The industry-standard container runtime supervisor that manages image downloads, storage, and execution layers.
 
-containerd.io: The industry-standard container runtime supervisor that manages image downloads, storage, and execution layers.
+`docker-buildx-plugin`: A powerful CLI extension for building images with advanced capabilities (like multi-platform builds).
 
-docker-buildx-plugin: A powerful CLI extension for building images with advanced capabilities (like multi-platform builds).
-
-docker-compose-plugin: Provides the native docker compose command for orchestrating multi-container systems (crucial for Inception!).
+`docker-compose-plugin`: Provides the native docker compose command for orchestrating multi-container systems (crucial for Inception!).
 
 **8. Verify the Service Status**
 

@@ -42,3 +42,41 @@ This example might look like:
 | `docker image prune` | Remove all dangling/unused images | `docker image prune -a` |
 
 ---
+
+
+* Docker images never store a diff of the host OS kernel. Instead, they store a layered filesystem of User Space files stacked on top of each other.
+## 🧠 The Architecture: Kernel Space vs. User Space
+
+>[!Note]
+>When you run a container, there is absolutely zero kernel virtualization happening.
+
+>The Host Kernel is Absolute: The container does not copy, diff, or modify the host kernel. If your host is running Linux Kernel 6.1, every single process inside your container executes instructions directly on that host Kernel 6.1 via standard system calls (syscalls).
+
+>The Image is Just "User Space": What we call an OS image (like debian or alpine) is actually just a root filesystem (rootfs). It contains the user-space tools, package managers (apt, apk), core libraries (glibc, musl), and environment configurations belonging to that distro—but no kernel.
+
+## 🧱 How the Layers Actually Stack
+
+* Instead of diffing against the kernel, each layer in a Docker image is a diff of the filesystem layer immediately below it.
+
+Think of it like building a tower of transparent sheets:
+### Layer 1: The Base OS User-Space (e.g., FROM alpine)
+
+- Docker downloads a tiny snapshot of Alpine's root directory structure (/bin, /etc, /lib, /usr). This gives you the basic shell environment and the apk package manager.
+
+`Diff status: Base layer.`
+
+### Layer 2: The Dependencies (e.g., RUN apk add nodejs)
+
+- Docker looks at Layer 1, installs Node.js, and saves only the files that changed or were added (like the Node binary in /usr/bin/node and its supporting libraries).
+
+`Diff status: Snapshot of added/modified files relative to Layer 1.`
+
+### Layer 3: Your Application (e.g., COPY app.js /app/)
+
+- Docker looks at Layer 2 and adds your script file to the filesystem.
+
+`Diff status: Snapshot of added files relative to Layer 2.`
+
+### Layer 4: The Container Layer (The Runtime Writable Layer)
+
+- The moment you type docker run, Docker takes those three read-only image layers, glues them together using a Union File System (overlay2), and tosses a thin Writable Layer on top. If your application writes a log file while running, it is written only to this top ephemeral layer.

@@ -22,4 +22,9 @@ rad.json
 #Test results file
 TestResults.xml
 
+# Dawnload image via curl
 # get image using wget : wget -O assets/new_name.png https://image.png
+
+# Reset default terminal colors
+# cp /etc/skel/.bashrc ~/.bashrc
+# source ~/.bashrc

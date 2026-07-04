@@ -1,13 +1,19 @@
-FROM python:latest
+# FROM python:latest
 
-WORKDIR /app
+# WORKDIR /app
 
-COPY requirements.txt .
+# COPY requirements.txt .
 
-RUN pip install -r requirements.txt
+# RUN pip install -r requirements.txt
 
-COPY hello.py .
+# COPY hello.py .
 
-EXPOSE 5000
+# EXPOSE 5000
 
-CMD python hello.py
+# CMD python hello.py
+
+FROM ubuntu:latest
+
+RUN groupadd inception && useradd -g inception abnsila
+USER abnsila
+RUN id

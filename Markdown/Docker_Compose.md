@@ -1,42 +1,4 @@
-# Docker Core Concepts
-
-> A structured reference for the core pillars of containerization — built for **Inception 42**.
-
----
-
-## Table of Contents
-
-- [Images — The Blueprints](#1-images--the-blueprints)
-- [Containers — The Living Processes](#2-containers--the-living-processes)
-- [Registries — The Library](#3-registries--the-library)
-- [Docker Compose — The Conductor](#4-docker-compose--the-conductor)
-
----
-
-## 3. Registries — The Library
-
-A **Registry** is a centralized storage system used to host and distribute Docker images.
-
-### Key Concepts
-
-| Concept | Description |
-|---|---|
-| **Public vs. Private** | Docker Hub is the default public registry. Private registries (AWS ECR, GitHub Packages, self-hosted) are used for enterprise/academic environments. |
-| **Repositories** | A registry holds one or more repositories — collections of versioned image tags (e.g., `debian:bullseye`, `debian:bookworm`). |
-
-### Registry Commands
-
-| Command | Description | Example |
-|---|---|---|
-| `docker login` | Authenticate with a registry | `docker login` |
-| `docker logout` | Log out from a registry | `docker logout` |
-| `docker pull` | Download an image from a registry | `docker pull mariadb:10.6` |
-| `docker push` | Upload a tagged image to a registry | `docker push user/server:latest` |
-| `docker search` | Search Docker Hub for public images | `docker search wordpress` |
-
----
-
-## 4. Docker Compose — The Conductor
+## Docker Compose — The Conductor
 
 **Docker Compose** defines, coordinates, and runs multi-container Docker applications via a single `docker-compose.yml` configuration file translated into Docker Daemon API calls.
 

@@ -1,4 +1,4 @@
-## 1. Images — The Blueprints
+## Images — The Blueprints
 
 An **Image** is an immutable (read-only) template containing everything needed to run a program: application code, runtime engine, system tools, libraries, and settings.
 

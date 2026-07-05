@@ -1,5 +1,5 @@
 
-## 2. Containers — The Living Processes
+## Containers — The Living Processes
 
 A **Container** is a runnable, isolated instance of an image. It is not a virtual machine — it is a normal host process wrapped in Linux Kernel isolation mechanisms.
 

@@ -1,0 +1,36 @@
+include:
+   - path: ./infra.yaml
+services:
+  web-fe:
+    container_name: web-fe
+    build: .
+    command: python app.py
+    ports:
+      - target: 5000
+        published: 5000
+    networks:
+      - frontend-net
+      - backend-net
+    volumes:
+      - type: volume
+        source: counter-vol
+        target: /code
+    depends_on:
+      redis:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: .
+          target: /code
+        - action: rebuild
+          path: requirements.txt
+
+networks:
+  frontend-net:
+  backend-net:
+    internal: true
+
+volumes:
+  counter-vol:
+  redis-vol:

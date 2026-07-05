@@ -1,0 +1,15 @@
+services:
+  redis:
+    image: redis:alpine
+    networks:
+      - backend-net
+    volumes:
+      - type: volume
+        source: redis-vol
+        target: /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s

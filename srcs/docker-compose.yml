@@ -17,6 +17,8 @@ services:
     image: wordpress
     container_name: wordpress
     restart: unless-stopped
+    networks:
+      - inception_net
     volumes:
       - wordpress_vol:var/www/html
 
@@ -25,6 +27,8 @@ services:
     image: mariadb
     container_name: mariadb
     restart: unless-stopped
+    networks:
+      - inception_net
     volumes:
       - mariadb_vol:var/lib/mysql
 

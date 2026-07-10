@@ -97,7 +97,9 @@ sudo apt update
 
 **7. Install the Docker Components**
 
+```bash
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
 
 > [!NOTE]
 > Why? This installs the entire modern containerization engine:

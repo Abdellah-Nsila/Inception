@@ -12,4 +12,4 @@ EXPOSE 3306
 
 ENTRYPOINT [ "/usr/local/bin/mariadb_start.sh" ]
 
-CMD [ "mariadbd-safe", "--user=mysql" ]
+CMD [ "mariadbd", "--user=mysql" ]

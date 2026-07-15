@@ -7,4 +7,5 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 	-out /etc/nginx/ssl/inception.crt \
 	-subj "/C=MA/L=BenGuerir/O=1337/CN=abnsila.42.fr"
 
-exec nginx -g "daemon off;"
+echo "Starting Nginx engine..."
+exec "$@"

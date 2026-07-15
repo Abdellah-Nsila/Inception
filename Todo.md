@@ -1,1 +1,2 @@
 - [x] Setup Virtual Machine
+- [ ] Mariadb take 10s to stop 

@@ -113,4 +113,12 @@ exec "$@"
 
 ```
 
-* **`exec "$@"`**: Instead of spawning `mariadbd-safe` as a child process of the shell script, `exec` replaces the shell process entirely. This makes `mariadbd-safe` **PID 1** inside the container. This is crucial because Docker sends stop signals (like `SIGTERM`) only to PID 1. Without this, your database won't shut down gracefully and could suffer table corruption!
+* **`exec "$@"`**: Instead of spawning `mariadbd` as a child process of the shell script, `exec` replaces the shell process entirely. This makes `mariadbd` **PID 1** inside the container. This is crucial because Docker sends stop signals (like `SIGTERM`) only to PID 1. Without this, your database won't shut down gracefully and could suffer table corruption!
+Why do people do this?
+
+6. The ENTRYPOINT + CMD Docker Pattern
+- This is a standard Docker best practice (used by official database images) because it makes the image highly flexible:
+
+    * If you run docker run my-image, it boots the database normally (using the default CMD).
+
+    * If you want to debug the container, you can override CMD by running docker run -it my-image sh. The entrypoint script still runs to set up permissions, but instead of launching the database, it drops you into a shell (sh) as PID 1!

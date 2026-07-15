@@ -10,8 +10,13 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
     echo "Initializing blank system tables..."
     mariadb-install-db --user=mysql --datadir=/var/lib/mysql --skip-test-db > /dev/null
 
-	# We use mariadbd --bootstrap to feed SQL statements directly into the engine
-    # while the server is offline, using the environment variables from your .env
+    # Defensive check: Stop early if env variables are missing
+    if [ -z "$MYSQL_ROOT_PASSWORD" ] || [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_USER" ] || [ -z "$MYSQL_PASSWORD" ]; then
+        echo "ERROR: One or more database environment variables are empty! Aborting setup."
+        exit 1
+    fi
+
+    # We use mariadbd --bootstrap to feed SQL statements directly into the engine
     mariadbd --user=mysql --bootstrap << EOF
 FLUSH PRIVILEGES;
 

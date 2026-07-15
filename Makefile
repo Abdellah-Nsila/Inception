@@ -1,0 +1,41 @@
+# ==============================================================================
+#                                VARIABLES
+# ==============================================================================
+MKDIR			= mkdir -p
+RM				= rm -rf
+
+MARIADB_VOL		= /home/${USER}/data/mariadb
+WORDPRESS_VOL	= /home/${USER}/data/wordpress
+
+COMPOSE			= docker compose -f ./srcs/docker-compose.yml
+
+
+
+# ==============================================================================
+#                                 TARGETS
+# ==============================================================================
+all: init build
+
+init:
+	@sudo $(MKDIR) $(MARIADB_VOL)
+	@sudo $(MKDIR) $(WORDPRESS_VOL)
+
+up: init
+	$(COMPOSE) up -d
+
+build: init
+	$(COMPOSE) up -d --build
+
+down:
+	$(COMPOSE) down
+
+clean: down
+	$(COMPOSE) down --volumes --remove-orphans
+
+fclean: clean
+	@sudo $(RM) $(MARIADB_VOL)
+	@sudo $(RM) $(WORDPRESS_VOL)
+
+re: fclean all
+
+.PHONY: all init up build down clean fclean re

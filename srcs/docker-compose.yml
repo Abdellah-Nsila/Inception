@@ -2,7 +2,7 @@ services:
 
   nginx:
     build: ./requirements/nginx
-    image: nginx-inception
+    image: "nginx"
     container_name: nginx
     restart: unless-stopped
     ports:
@@ -12,19 +12,24 @@ services:
     volumes:
       - wordpress_vol:/var/www/html
 
-  # wordpress:
-  #   build: ./requirements/wordpress
-  #   image: wordpress-inception
-  #   container_name: wordpress
-  #   restart: unless-stopped
-  #   networks:
-  #     - inception_net
-  #   volumes:
-  #     - wordpress_vol:/var/www/html
+  wordpress:
+    build: ./requirements/wordpress
+    image: "wordpress"
+    container_name: wordpress
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - inception_net
+    volumes:
+      - wordpress_vol:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
   mariadb:
     build: ./requirements/mariadb
-    image: mariadb-inception  
+    image: "mariadb"
     container_name: mariadb
     restart: unless-stopped
     env_file:
@@ -33,6 +38,13 @@ services:
       - inception_net
     volumes:
       - mariadb_vol:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+      
 
 networks:
   inception_net:

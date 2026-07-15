@@ -33,8 +33,11 @@ clean: down
 	$(COMPOSE) down --volumes --remove-orphans
 
 fclean: clean
+# 	Should I delete images too ?
 	@sudo $(RM) $(MARIADB_VOL)
 	@sudo $(RM) $(WORDPRESS_VOL)
+	docker image prune -a
+
 
 re: fclean all
 

@@ -2,8 +2,6 @@
 
 This container runs a secure, persistent MariaDB database server on Alpine Linux, custom-tailored to act as the database backend for our WordPress service.
 
----
-
 ## 🛠️ Configuration Breakdown
 
 ### 1. The Configuration (`mariadb-server.cnf`)
@@ -22,6 +20,21 @@ skip-networking = false
 
 * **`bind-address = 0.0.0.0`**: Tells MariaDB to listen on all network interfaces inside the container's isolated network, rather than defaulting to just `127.0.0.1`.
 * **`skip-networking = false`**: Ensures TCP/IP networking is enabled, allowing outside containers to connect.
+
+This configuration tunes your database engine so it is accessible over your internal virtual network.
+
+* `[mysqld]`
+Indicates that the options below apply strictly to the MariaDB server daemon (`mysqld`).
+* `user = mysql`
+Forces the database engine to run under the restricted `mysql` system user account for safety.
+* `port = 3306`
+Binds the database service to the standard default port for MySQL/MariaDB.
+* `datadir = /var/lib/mysql`
+Specifies the internal path where MariaDB will physically store its database files, tables, and indices. This is the directory you map to your Docker volume on your host machine.
+* `bind-address = 0.0.0.0`
+Forces MariaDB to accept connections from any network interface. Without this, it would only listen to requests inside its own local container (`127.0.0.1`), meaning WordPress wouldn't be able to log in.
+* `skip-networking = false`
+Explicitly enables TCP/IP networking. Some installations disable networking entirely to only allow communication via local UNIX socket files. Setting this to `false` ensures that other containers can reach MariaDB over the network port.
 
 ---
 
@@ -122,3 +135,4 @@ Why do people do this?
     * If you run docker run my-image, it boots the database normally (using the default CMD).
 
     * If you want to debug the container, you can override CMD by running docker run -it my-image sh. The entrypoint script still runs to set up permissions, but instead of launching the database, it drops you into a shell (sh) as PID 1!
+

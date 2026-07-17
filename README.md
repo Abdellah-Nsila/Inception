@@ -186,7 +186,74 @@ When you execute a command, here is the chain reaction:
 
 Docker simplifies software development using containers that share the host’s kernel, unlike virtual machines that run their own OS. Containers rely on key Linux features—namespaces and control groups (cgroups)—to ensure isolation and efficient resource management. Namespaces isolate system resources, while cgroups limit resource usage to prevent overloading.
 
-## Chapter 3 :
+## Chapter 3 PID 1:
+
+In a traditional Linux system, **PID 1** (Process ID 1) is the `init` system (like `systemd` or `sysvinit`). It's the very first process that boots up, and it acts as the "ancestor" of every other process on the machine.
+
+Inside a Docker container, things are different. There is no full operating system booting up; instead, the container just runs a single primary process, and **whatever process you launch via your Dockerfile becomes PID 1**.
+
+If your primary process isn't designed to act like a system init process, you run into two major issues.
+
+---
+
+### The Two Major Responsibilities of PID 1
+
+#### 1. Signal Forwarding (Why `docker stop` takes 10 seconds)
+
+When you type `docker stop`, Docker sends a `SIGTERM` signal to PID 1, politely asking it to wrap up what it's doing, save data, and shut down gracefully.
+
+A normal init system knows exactly what to do with this signal. But if a basic shell script or an unconfigured application is running as PID 1, it often doesn't know how to handle `SIGTERM`. It ignores it completely. Docker waits 10 seconds, loses patience, and sends a ruthless `SIGKILL` to force-stop the container.
+
+> **The Risk:** For databases like MariaDB, a sudden `SIGKILL` can cause database corruption and data loss because it didn't get to close its open files properly.
+
+#### 2. Reaping Zombie Processes
+
+When a process creates a child process, and that child process finishes its job, it becomes a "zombie" until the parent process checks its exit status. If the parent process dies before checking, that child becomes an orphan.
+
+In a normal OS, PID 1 adopts all orphaned processes and automatically clears ("reaps") them when they die. If your container's PID 1 doesn't do this, zombie processes accumulate, clog your system's process table, and can eventually crash the container.
+
+---
+
+### Dockerfile Best Practices to Master PID 1
+
+The way you write your Dockerfile dictates whether your application behaves properly as PID 1. Here are the absolute best practices to follow:
+
+#### 1. The Exec Form vs. The Shell Form
+
+How you write your final `CMD` or `ENTRYPOINT` instruction completely changes how PID 1 is assigned.
+
+* **❌ The Shell Form:** `CMD top`
+Under the hood, Docker translates this to `/bin/sh -c "top"`. This means `/bin/sh` becomes PID 1, and your application (`top`) becomes a child process. Because `sh` does not forward signals, typing `docker stop` will never reach your app gracefully.
+*   The Exec Form: `CMD ["top"]`
+This executes the binary directly without spawning a shell. Your application (`top`) becomes PID 1 directly. If your binary handles signals well (like Nginx), it will shut down instantly and gracefully.
+
+#### 2. Use a Lightweight Init System (`tini`)
+
+If you are running applications that spawn multiple background processes or don't handle signals cleanly, you should use a micro-init utility like `tini` or `dumb-init`.
+
+On an Alpine Linux base, you can install and configure `tini` to sit at PID 1, reap your zombies, and perfectly forward signals to your actual application:
+
+```dockerfile
+# Install tini
+RUN apk add --no-cache tini
+
+# Set tini as the entrypoint to manage PID 1
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Your actual command now runs safely under tini
+CMD ["my-app-binary"]
+
+```
+
+---
+
+### General Dockerfile Best Practices
+
+Beyond PID 1, writing highly optimized Dockerfiles comes down to keeping things clean, secure, and fast to build.
+
+* **Leverage Layer Caching:** Docker builds images layer by layer. If a layer changes, every layer *after* it must rebuild from scratch. Place things that change rarely (like installing packages) at the top of your Dockerfile, and things that change constantly (like copying source code) at the absolute bottom.
+* **Combine Commands to Reduce Layers:** Every `RUN` instruction creates a new image layer, which increases the final image size. Group related setup steps using `&&` and backslashes `\`.
+* **Clean Up the Package Cache Instantly:** Never leave package manager leftovers behind. If using Alpine, use `apk add --no-cache`. If using Debian/Ubuntu, always run `rm -rf /var/lib/apt/lists/*` in the exact same `RUN` command where you installed the packages.
 
 
 ## Chapter 4 :

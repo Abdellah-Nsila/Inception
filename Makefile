@@ -4,8 +4,8 @@
 MKDIR			= mkdir -p
 RM				= rm -rf
 
-MARIADB_VOL		= /home/${USER}/data/mariadb
-WORDPRESS_VOL	= /home/${USER}/data/wordpress
+MARIADB_VOL		= /home/abnsila/data/mariadb
+WORDPRESS_VOL	= /home/abnsila/data/wordpress
 
 COMPOSE			= docker compose -f ./srcs/docker-compose.yml
 

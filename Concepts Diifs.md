@@ -1,21 +1,25 @@
-Here is a clean, professional, and architectural `README.md` template designed for your portfolio or GitHub repository. It breaks down these core DevOps concepts with clear, technical precision, showing recruiters and evaluators exactly *why* architectural choices matter.
-
----
-
-```markdown
 # Infrastructure & Containerization Architecture Showcase
 
 This document breaks down the core architectural choices and system concepts implemented throughout this containerized infrastructure project. Understanding these trade-offs is essential for designing secure, high-performance, and scalable production environments.
 
 ---
 
-## 1. Virtual Machines vs. Docker Containers
+# 📚 Table of Contents
+
+- [1. Virtual Machines vs Docker Containers](#1-virtual-machines-vs-docker-containers)
+- [2. Docker Secrets vs Environment Variables](#2-docker-secrets-vs-environment-variables)
+- [3. Docker Network vs Host Network](#3-docker-network-vs-host-network)
+- [4. Docker Volumes vs Bind Mounts](#4-docker-volumes-vs-bind-mounts)
+
+---
+
+# 1. Virtual Machines vs Docker Containers
 
 Deploying applications requires isolation, but the mechanism chosen impacts system overhead, performance, and scalability.
 
+## Architecture Comparison
 
-```
-
+```text
 +---------------------------------------+     +---------------------------------------+
 |          VIRTUAL MACHINES             |     |           DOCKER CONTAINERS           |
 +---------------------------------------+     +---------------------------------------+
@@ -28,93 +32,262 @@ Deploying applications requires isolation, but the mechanism chosen impacts syst
 +---------------------------------------+     +---------------------------------------+
 | [ Physical Hardware ]                 |     | [ Physical Hardware ]                 |
 +---------------------------------------+     +---------------------------------------+
-
 ```
 
-### Virtual Machines (Hardware-Level Abstraction)
-*   **Mechanism:** A Hypervisor (e.g., VMware, VirtualBox) abstracts physical hardware, creating entirely separate virtual machines. Each VM requires its own full **Guest Operating System**.
-*   **Resource Overhead:** High. Because each VM runs a dedicated kernel, it duplicates system processes, requiring gigabytes of RAM and substantial disk space just to boot.
-*   **Isolation & Boot Time:** Strongest isolation boundary (kernel-level). Boot times take minutes because the entire guest OS must undergo its complete initialization sequence.
+## Virtual Machines (Hardware-Level Abstraction)
 
-### Docker Containers (OS-Level Abstraction)
-*   **Mechanism:** Containers leverage features built directly into the Linux kernel—specifically **Namespaces** (for process, network, and mount isolation) and **cgroups** (for resource limits). They share the **Host OS Kernel** directly.
-*   **Resource Overhead:** Minimal. Since there is no Guest OS, containers consume only the exact resources required by the application processes running inside them.
-*   **Isolation & Boot Time:** Process-level isolation. Containers boot near-instantly (milliseconds) because they don't initialize a kernel; they just start a process.
+### Mechanism
+
+A Hypervisor (e.g., VMware or VirtualBox) abstracts physical hardware and creates isolated virtual machines. Every VM requires its own complete Guest Operating System.
+
+### Resource Overhead
+
+- High RAM consumption
+- Large disk usage
+- Separate kernel per VM
+
+### Isolation & Boot Time
+
+- Strongest isolation (kernel-level)
+- Boot time measured in minutes
 
 ---
 
-## 2. Docker Secrets vs. Environment Variables
+## Docker Containers (OS-Level Abstraction)
 
-Managing sensitive runtime data requires strict access control policies to prevent credential leaks.
+### Mechanism
 
-### Environment Variables
-*   **Behavior:** Variables are stored directly within the container's configuration state.
-*   **Security Risks:**
-    *   **Visibility:** Visible in plain text to anyone with container access via a simple `docker inspect <container_id>` command.
-    *   **Permanence:** Hardcoded inside environment blocks or built layers, leaving permanent tracks in system logs or image histories.
-    *   **Process Leakage:** Inherited by every single child process spawned within the container, widening the attack surface.
+Containers leverage Linux kernel features:
 
-### Docker Secrets
-*   **Behavior:** Managed directly by the Docker daemon. Secrets are securely exposed to the container at runtime as real files mounted inside an in-memory, read-only `tmpfs` layer at `/run/secrets/<secret_name>`.
-*   **Security Protections:**
-    *   **Zero Leakage:** They never appear in `docker inspect` or image layers.
-    *   **Volatile Lifecycle:** They exist solely in volatile container memory while the container state is active. The moment the container stops, the mount completely evaporates from storage.
-    *   **Path-Based Access:** Only root or explicitly authorized application processes reading the specific file path can access the credential strings.
+- Namespaces
+- cgroups
+- Shared Host Kernel
 
----
+### Resource Overhead
 
-## 3. Docker Network vs. Host Network
+- Minimal RAM usage
+- No Guest OS
+- Starts only application processes
 
-Determining how containers communicate with each other and the outside world affects security boundaries and network throughput.
+### Isolation & Boot Time
 
-### Docker Network (Bridge Mode / Default)
-*   **How it works:** Docker creates an isolated virtual private network switch (bridge interface) inside the host. Containers receive private IPs inside this network block (e.g., `172.18.0.0/16`).
-*   **Traffic Routing:** Communication between containers uses internal DNS resolution (e.g., `wordpress` talking directly to `mariadb`). Exposing services externally requires explicit port forwarding rules (`-p 443:443`).
-*   **Use Case:** Production environments where strict microservice isolation is required. The database port is kept completely hidden from the internet, accessible only within the internal virtual network switch.
-
-### Host Network (`network_mode: host`)
-*   **How it works:** The container bypasses Docker's network isolation layers entirely. It shares the host's network interfaces, ports, and IP addresses directly.
-*   **Traffic Routing:** If a container running on host mode binds to port `80`, it occupies port `80` directly on your physical server. No port forwarding or Network Address Translation (NAT) overhead occurs.
-*   **Use Case:** Ultra-high performance scenarios or massive data parsing where the computational cost of Docker's network translation layers introduces unacceptable routing latency.
+- Process-level isolation
+- Starts in milliseconds
 
 ---
 
-## 4. Docker Volumes vs. Bind Mounts
+# 2. Docker Secrets vs Environment Variables
 
-Containers are ephemeral by default. When a container is destroyed, its local file modifications are lost. Persistent data storage requires structural separation from the container filesystem.
+Managing sensitive runtime data requires strict access control.
 
+## Environment Variables
 
+### Behavior
+
+Environment variables are stored directly inside the container configuration.
+
+### Drawbacks
+
+- Visible via
+
+```bash
+docker inspect <container_id>
 ```
 
-```
-               [ HOST FILESYSTEM ]
+- Persist inside container configuration
+- Accessible by child processes
 
-```
+---
 
-(Bind Mount)                         (Docker Volume)
-User Managed                         Docker Managed
-+-------------+                      +-----------------------+
-| /home/user/ |                      | /var/lib/docker/      |
-|  srcs/conf/ |                      |   volumes/wp_data/    |
-+------+------+                      +-----------+-----------+
-|                                         |
-+-----------------+   +-------------------+
-|   |
-[ CONTAINER FS ]
-+--------------+
-| /var/www/    |
-+--------------+
+## Docker Secrets
 
+### Behavior
+
+Docker Secrets are managed by the Docker daemon and mounted as read-only files.
+
+Location:
+
+```text
+/run/secrets/<secret_name>
 ```
 
-### Docker Volumes
-*   **Management:** Fully managed and encapsulated by the Docker daemon. Stored within a dedicated, system-restricted directory on the host machine (`/var/lib/docker/volumes/`).
-*   **Isolation:** The host user shouldn't directly touch or modify these directories. Docker completely abstracts the underlying filesystem.
-*   **Key Advantage:** Highly portable, safe, and easily backed up via Docker CLI tools. They correctly handle pre-populating data if mounted into a non-empty container directory.
+### Advantages
 
-### Bind Mounts
-*   **Management:** Directly references an absolute or relative directory path chosen by the user anywhere on the host filesystem (e.g., mapping `./srcs/nginx.conf` to `/etc/nginx/nginx.conf`).
-*   **Isolation:** None. Processes inside the container can directly create, delete, or modify system files on the host computer depending on user privileges.
-*   **Key Advantage:** Perfect for development workflows. Any code updates or configuration adjustments made on your host machine instantly update inside the running container environment without necessitating a rebuild.
+- Never appear in image layers
+- Never appear in `docker inspect`
+- Stored only in memory (`tmpfs`)
+- Removed immediately when the container exits
+- Accessible only through the mounted file
 
+---
+
+# 3. Docker Network vs Host Network
+
+Container networking affects isolation, security, and performance.
+
+## Docker Bridge Network (Default)
+
+### How it Works
+
+Docker creates an isolated bridge network.
+
+Containers receive private IP addresses.
+
+Example subnet:
+
+```text
+172.18.0.0/16
 ```
+
+### Communication
+
+Containers communicate using Docker DNS.
+
+Example:
+
+```text
+wordpress
+      │
+      ▼
+mariadb:3306
+```
+
+External access requires port mapping.
+
+Example:
+
+```bash
+docker run -p 443:443 nginx
+```
+
+### Best Use Case
+
+- Production
+- Microservices
+- Internal database communication
+
+---
+
+## Host Network
+
+```yaml
+network_mode: host
+```
+
+### How it Works
+
+The container shares the host network stack directly.
+
+No bridge.
+
+No NAT.
+
+No virtual interfaces.
+
+### Result
+
+If nginx listens on port 80:
+
+```text
+Host:80
+```
+
+is occupied directly.
+
+### Best Use Case
+
+- High-performance networking
+- Low-latency applications
+
+---
+
+# 4. Docker Volumes vs Bind Mounts
+
+Containers are ephemeral.
+
+Without external storage, deleting a container also deletes its filesystem changes.
+
+## Storage Architecture
+
+```text
+                 HOST FILESYSTEM
+
+     Bind Mount                     Docker Volume
+
++-------------------+         +---------------------------+
+| /home/user/srcs/  |         | /var/lib/docker/volumes/ |
++---------+---------+         +------------+--------------+
+          |                                |
+          +---------------+----------------+
+                          |
+                    CONTAINER
+                  +---------------+
+                  | /var/www/html |
+                  +---------------+
+```
+
+---
+
+## Docker Volumes
+
+### Management
+
+Managed entirely by Docker.
+
+Typical location:
+
+```text
+/var/lib/docker/volumes/
+```
+
+### Advantages
+
+- Portable
+- Safe
+- Easy backups
+- Recommended for databases
+- Production-ready
+
+---
+
+## Bind Mounts
+
+### Management
+
+References any directory on the host.
+
+Example:
+
+```text
+./srcs/nginx.conf
+        │
+        ▼
+/etc/nginx/nginx.conf
+```
+
+### Advantages
+
+- Excellent for development
+- Instant file synchronization
+- No rebuild required
+
+### Drawbacks
+
+- Container can modify host files
+- Less isolated
+- Host filesystem structure matters
+
+---
+
+# 📌 Summary
+
+| Component | Recommended For |
+|------------|-----------------|
+| Virtual Machine | Strong isolation, multiple operating systems |
+| Docker Container | Lightweight application deployment |
+| Docker Secret | Passwords, API keys, certificates |
+| Environment Variable | Non-sensitive configuration |
+| Bridge Network | Production microservices |
+| Host Network | High-performance networking |
+| Docker Volume | Persistent production data |
+| Bind Mount | Development workflows |

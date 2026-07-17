@@ -2,6 +2,19 @@
 
 set -e
 
+# Read secrets into variables if the secret files exist
+if [ -f "/run/secrets/db_password" ]; then
+    MYSQL_PASSWORD=$(cat /run/secrets/db_password)
+fi
+
+if [ -f "/run/secrets/wp_admin_password" ]; then
+    WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password)
+fi
+
+if [ -f "/run/secrets/wp_user_password" ]; then
+    WP_PASSWORD=$(cat /run/secrets/wp_user_password)
+fi
+
 if [ ! -f "wp-config.php" 	]; then
 
 	echo "WordPress is not installed. Initiating installation..."

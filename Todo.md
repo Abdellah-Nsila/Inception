@@ -1,2 +1,3 @@
 - [x] Setup Virtual Machine
-- [ ] Mariadb take 10s to stop 
+- [x] Mariadb take 10s to stop
+<!-- get image using wget : wget -O assets/new_name.png https://image.png -->

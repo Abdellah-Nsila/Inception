@@ -24,4 +24,3 @@ TestResults.xml
 # Credentiels
 *.env
 /secrets
-# get image using wget : wget -O assets/new_name.png https://image.png

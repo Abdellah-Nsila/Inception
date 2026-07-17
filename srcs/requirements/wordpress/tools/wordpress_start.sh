@@ -36,7 +36,7 @@ if [ ! -f "wp-config.php" 	]; then
         --role=author \
         --allow-root
 
-	# chown -R nobody:nogroup /var/www/html
+	# chown -R nobody:nobody /var/www/html
 
 	echo "WordPress installation and configuration completed successfully!"
 else

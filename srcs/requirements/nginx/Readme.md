@@ -37,6 +37,55 @@ server {
 * **What it does:** Points Nginx to the shared volume directory holding your WordPress data and defines the file evaluation hierarchy when a user looks up a directory path.
 
 ```nginx
+    location /portfolio/ {
+        proxy_pass http://portfolio:5173;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+```
+
+This block is a **Reverse Proxy**. It turns your Nginx container into a security guard and traffic cop: instead of exposing your portfolio directly to the internet on port 5173, Nginx intercepts everything on the secure port 443 (`https`) and safely passes it to the backend container.
+
+During an evaluation defense, this is exactly what each line tells Nginx to do:
+
+---
+
+### 1. `location /portfolio/`
+
+This defines the routing trigger. It tells Nginx: *"Any incoming web request whose URL starts with `[https://abnsila.42.fr/portfolio/](https://abnsila.42.fr/portfolio/)` must be handled by the rules inside these brackets."*
+
+### 2. `proxy_pass http://portfolio:5173;`
+
+This is the core forwarder. It redirects the request down into your private Docker network.
+
+* **`portfolio`** is not an IP address; it is the exact service name from your `docker-compose.yml`. Nginx relies on **Docker's internal DNS server** to resolve this name into the container's private IP.
+* **`5173`** is the internal port where Vite is listening.
+
+### 3. `proxy_set_header Host $host;`
+
+By default, a proxy rewrites the request headers. If you don't include this line, Nginx tells the backend that the request came for `http://portfolio:5173`.
+By setting this header to `$host`, Nginx passes along the real domain name the user typed into their browser (`abnsila.42.fr`). As you saw earlier, Vite 6 requires this to pass its security checks.
+
+### 4. `proxy_set_header X-Real-IP $remote_addr;`
+
+Without this, the portfolio container thinks 100% of its traffic is coming from the Nginx container's internal network IP (e.g., `172.18.0.3`). This line grabs the client's actual public IP address and hands it to the backend container.
+
+### 5. `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`
+
+This handles request tracing. It builds a historical list of IP addresses. If a request passes through a load balancer, a CDN, and then Nginx, this header appends each hop in order (`Client-IP, Proxy1-IP, Proxy2-IP`). It prevents malicious users from hiding behind proxies.
+
+### 6. `proxy_set_header X-Forwarded-Proto $scheme;`
+
+This tells the backend what protocol the client used to connect. `$scheme` will resolve to `https`. This is vital because React or WordPress needs to know that the connection is encrypted so they can safely generate secure absolute links and cookies.
+
+---
+
+> **The Evaluation Takeaway:** This block allows you to keep all ports closed on your host machine except for Nginx (ports 80 and 443), perfectly honoring the structural isolation requirements of the Inception project.
+
+
+```nginx
     location / {
         try_files $uri $uri/ /index.php?$args;
     }

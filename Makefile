@@ -38,7 +38,6 @@ fclean: clean
 	@sudo $(RM) $(WORDPRESS_VOL)
 	docker image prune -a
 
-
 re: fclean all
 
 .PHONY: all init up build down clean fclean re

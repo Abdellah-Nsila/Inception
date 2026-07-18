@@ -31,6 +31,10 @@ if [ ! -f "wp-config.php" 	]; then
 		--dbhost=mariadb \
 		--allow-root
 
+    # Inject Redis configuration into wp-config.php at runtime
+    wp config set WP_REDIS_HOST redis --allow-root
+    wp config set WP_REDIS_PORT 6379 --raw --allow-root
+
 	# C. Install WordPress and configure the administrator profile
 	wp core install \
 		--url="${DOMAIN_NAME}" \
@@ -48,6 +52,10 @@ if [ ! -f "wp-config.php" 	]; then
         --user_pass="${WP_PASSWORD}" \
         --role=author \
         --allow-root
+
+    # Install redis plugin
+    wp plugin install redis-cache --activate --allow-root
+    wp redis enable --allow-root
 
 	# chown -R nobody:nobody /var/www/html
 

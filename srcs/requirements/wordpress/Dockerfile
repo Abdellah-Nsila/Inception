@@ -6,6 +6,7 @@ RUN apk update && apk upgrade && apk add --no-cache \
     php83-mysqli \
     php83-json \
     php83-openssl \
+    php83-pecl-redis \
     php83-curl \
     php83-zlib \
     php83-xml \
@@ -13,6 +14,7 @@ RUN apk update && apk upgrade && apk add --no-cache \
     php83-intl \
     php83-dom \
     php83-xmlreader \
+    php83-tokenizer \
     php83-ctype \
     php83-session \
     php83-mbstring \
@@ -41,4 +43,6 @@ ENTRYPOINT [ "/usr/local/bin/wordpress_start.sh" ]
 
 CMD [ "php-fpm83", "-F" ]
 
-# wp db check --allow-root 
+#Check wordpress status: wp db check --allow-root
+
+#List pligins and redis docker exec -it wordpress wp plugin list --allow-root

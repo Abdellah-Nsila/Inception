@@ -6,6 +6,7 @@ RM				= rm -rf
 
 MARIADB_VOL		= /home/abnsila/data/mariadb
 WORDPRESS_VOL	= /home/abnsila/data/wordpress
+REDIS_VOL		= /home/abnsila/data/redis
 
 COMPOSE			= docker compose -f ./srcs/docker-compose.yml
 
@@ -19,6 +20,7 @@ all: init build
 init:
 	@sudo $(MKDIR) $(MARIADB_VOL)
 	@sudo $(MKDIR) $(WORDPRESS_VOL)
+	@sudo $(MKDIR) $(REDIS_VOL)
 
 up: init
 	$(COMPOSE) up -d
@@ -36,6 +38,7 @@ fclean: clean
 # 	Should I delete images too ?
 	@sudo $(RM) $(MARIADB_VOL)
 	@sudo $(RM) $(WORDPRESS_VOL)
+	@sudo $(RM) $(REDIS_VOL)
 	docker image prune -a
 
 re: fclean all

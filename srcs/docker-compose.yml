@@ -1,19 +1,28 @@
 services:
 
-  nginx:
-    build:
-      context: ./requirements/nginx
-      args:
-        DOMAIN_NAME: ${DOMAIN_NAME}
-    image: "nginx"
-    container_name: nginx
-    restart: unless-stopped
-    ports:
-      - 443:443
+  mariadb:
+    build: ./requirements/mariadb
+    image: "mariadb"
+    container_name: mariadb
+    secrets:
+      - db_password
+      - db_root_password
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
     networks:
       - inception_net
     volumes:
-      - wordpress_vol:/var/www/html
+      - mariadb_vol:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u root -p$$(cat /run/secrets/db_root_password)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
 
   wordpress:
     build: ./requirements/wordpress
@@ -40,30 +49,31 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  mariadb:
-    build: ./requirements/mariadb
-    image: "mariadb"
-    container_name: mariadb
-    secrets:
-      - db_password
-      - db_root_password
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
-      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+  nginx:
+    build:
+      context: ./requirements/nginx
+      args:
+        DOMAIN_NAME: ${DOMAIN_NAME}
+    image: "nginx"
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - 443:443
     networks:
       - inception_net
     volumes:
-      - mariadb_vol:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u root -p$$(cat /run/secrets/db_root_password)"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      - wordpress_vol:/var/www/html
+
+  redis:
+    build: ./requirements/bonus/redis
+    image: "redis"
+    container_name: redis
     restart: unless-stopped
-      
+    networks:
+      - inception_net
+    volumes:
+      - redis_vol:/data
+
 secrets:
   db_root_password:
     file: ../secrets/db_root_password.txt
@@ -93,3 +103,11 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/home/abnsila/data/mariadb'
+  redis_vol:
+    name: redis_vol
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/abnsila/data/redis'
+    

@@ -74,6 +74,16 @@ services:
     volumes:
       - redis_vol:/data
 
+  portfolio:
+    image: "portfolio"
+    container_name: portfolio
+    build: ./requirements/bonus/protofolio
+    networks:
+      - inception_net
+    environment:
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=${DOMAIN_NAME}
+    restart: unless-stopped
+
 secrets:
   db_root_password:
     file: ../secrets/db_root_password.txt

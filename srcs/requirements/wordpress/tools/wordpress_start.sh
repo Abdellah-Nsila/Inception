@@ -15,7 +15,7 @@ if [ -f "/run/secrets/wp_user_password" ]; then
     WP_PASSWORD=$(cat /run/secrets/wp_user_password)
 fi
 
-if [ ! -f "wp-config.php" 	]; then
+if [ ! -f "wp-config.php" ]; then
 
 	echo "WordPress is not installed. Initiating installation..."
 
@@ -37,7 +37,7 @@ if [ ! -f "wp-config.php" 	]; then
 
 	# C. Install WordPress and configure the administrator profile
 	wp core install \
-		--url="${DOMAIN_NAME}" \
+		--url="https://${DOMAIN_NAME}" \
 		--title="${WP_TITLE}" \
         --admin_user="${WP_ADMIN_USER}" \
         --admin_password="${WP_ADMIN_PASSWORD}" \
@@ -56,8 +56,6 @@ if [ ! -f "wp-config.php" 	]; then
     # Install redis plugin
     wp plugin install redis-cache --activate --allow-root
     wp redis enable --allow-root
-
-	# chown -R nobody:nobody /var/www/html
 
 	echo "WordPress installation and configuration completed successfully!"
 else

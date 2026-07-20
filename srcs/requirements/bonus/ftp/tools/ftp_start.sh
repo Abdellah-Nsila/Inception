@@ -1,24 +1,24 @@
 #!/bin/sh
 set -e
 
-if [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
-    echo "ERROR: FTP_USER or FTP_PASS environment variables are missing."
-    exit 1
-fi
-
-if ! id "$FTP_USER" >/dev/null 2>&1; then
-    echo "Creating FTP user: $FTP_USER"
-    useradd -m -s /bin/sh "$FTP_USER"
-    echo "$FTP_USER:$FTP_PASS" | chpasswd
-    usermod -d /var/www/html "$FTP_USER"
-fi
-
-# Ensure the shared WordPress volume folders have valid access levels
+# Ensure the shared volume workspace directory exists
 mkdir -p /var/www/html
-chown -R $FTP_USER:$FTP_USER /var/www/html
 
-# Crucial Fix: Create the empty jail directory required by vsftpd on Alpine
-mkdir -p /var/run/vsftpd/empty
+# Create the user without a password if they don't exist yet
+if ! id "$FTP_USER" >/dev/null 2>&1; then
+    adduser -D "$FTP_USER"
+fi
 
-echo "Starting vsftpd server..."
+# Set the password securely from your environment variables
+echo "$FTP_USER:$FTP_PASSWORD" | chpasswd
+
+# Assign directory ownership so the new user can write to the volume
+chown -R "$FTP_USER:$FTP_USER" /var/www/html
+
+# Whitelist the user inside the vsftpd allowed accounts file
+if ! grep -q "^$FTP_USER$" /etc/vsftpd.userlist; then
+    echo "$FTP_USER" >> /etc/vsftpd.userlist
+fi
+
+# Execute the CMD passed from the Dockerfile
 exec "$@"

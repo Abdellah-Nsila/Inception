@@ -39,7 +39,7 @@ fclean: clean
 	@sudo $(RM) $(MARIADB_VOL)
 	@sudo $(RM) $(WORDPRESS_VOL)
 	@sudo $(RM) $(REDIS_VOL)
-	docker image prune -a
+	docker system prune -a --force
 
 re: fclean all
 

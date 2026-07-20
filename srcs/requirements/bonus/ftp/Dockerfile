@@ -1,6 +1,6 @@
 FROM alpine:3.23
 
-RUN apk update && apk add --no-cache vsftpd shadow
+RUN apk update && apk add --no-cache vsftpd
 
 COPY ./conf/vsftpd.conf /etc/vsftpd/vsftpd.conf
 

@@ -97,3 +97,5 @@ Type your database name (e.g., `${MYSQL_DATABASE}`).
 
 
 Once logged in, you will be able to browse all your WordPress database tables (`wp_posts`, `wp_users`, etc.) directly from your browser!
+
+- Go to `http://abnsila.42.fr:8080`

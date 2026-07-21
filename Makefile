@@ -7,6 +7,7 @@ RM				= rm -rf
 MARIADB_VOL		= /home/abnsila/data/mariadb
 WORDPRESS_VOL	= /home/abnsila/data/wordpress
 REDIS_VOL		= /home/abnsila/data/redis
+PORTAINER_VOL	= /home/abnsila/data/portainer
 
 COMPOSE			= docker compose -f ./srcs/docker-compose.yml
 
@@ -21,6 +22,7 @@ init:
 	@sudo $(MKDIR) $(MARIADB_VOL)
 	@sudo $(MKDIR) $(WORDPRESS_VOL)
 	@sudo $(MKDIR) $(REDIS_VOL)
+	@sudo $(MKDIR) $(PORTAINER_VOL)
 
 up: init
 	$(COMPOSE) up -d
@@ -39,6 +41,7 @@ fclean: clean
 	@sudo $(RM) $(MARIADB_VOL)
 	@sudo $(RM) $(WORDPRESS_VOL)
 	@sudo $(RM) $(REDIS_VOL)
+	@sudo $(RM) $(PORTAINER_VOL)
 	docker system prune -a --force
 
 re: fclean all

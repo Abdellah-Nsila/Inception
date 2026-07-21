@@ -1,0 +1,20 @@
+DOMAIN_NAME=abnsila.42.fr
+
+MYSQL_ROOT_PASSWORD=rootPass
+MYSQL_DATABASE=wordpress
+MYSQL_USER=wp_user
+MYSQL_PASSWORD=wpPass
+
+WORDPRESS SETUP
+WP_TITLE="Inception - abnsila"
+
+WP_ADMIN_USER=manager
+WP_ADMIN_PASSWORD=managerPass
+WP_ADMIN_EMAIL=manager@gmail.com
+
+WP_USER=pilo
+WP_PASSWORD=piloPass
+WP_EMAIL=pilo@gmail.com
+
+FTP_USER=ftp_user
+FTP_PASS=ftp_user_pass

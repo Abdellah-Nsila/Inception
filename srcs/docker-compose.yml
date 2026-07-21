@@ -97,10 +97,10 @@ services:
     ports:
       - "21:21"
       - "30000-30005:30000-30005"
-    volumes:
-      - wordpress_vol:/var/www/html
     networks:
       - inception_net
+    volumes:
+      - wordpress_vol:/var/www/html
     restart: unless-stopped
 
   adminer:
@@ -113,6 +113,19 @@ services:
       - inception_net
     depends_on:
       - mariadb
+    restart: unless-stopped
+
+  portainer:
+    build: ./requirements/bonus/portainer
+    image: "portainer"
+    container_name: portainer
+    ports:
+      - 9000:9000
+    networks:
+      - inception_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_vol:/data
     restart: unless-stopped
 
 secrets:
@@ -151,4 +164,11 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/home/abnsila/data/redis'
+  portainer_vol:
+    name: portainer_vol
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/abnsila/data/portainer'
     

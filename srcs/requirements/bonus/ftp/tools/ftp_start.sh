@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+if [ -f "/run/secrets/ftp_password" ]; then
+    FTP_PASSWORD=$(cat /run/secrets/ftp_password)
+fi
+
 # Ensure the shared volume workspace directory exists
 mkdir -p /var/www/html
 

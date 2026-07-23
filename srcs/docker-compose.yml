@@ -91,9 +91,10 @@ services:
     build: ./requirements/bonus/ftp
     image: "ftp"
     container_name: ftp
+    secrets:
+      - ftp_password
     environment:
       - FTP_USER=${FTP_USER}
-      - FTP_PASS=${FTP_PASS}
     ports:
       - "21:21"
       - "30000-30005:30000-30005"
@@ -137,6 +138,8 @@ secrets:
     file: ../secrets/wp_admin_password.txt
   wp_user_password:
     file: ../secrets/wp_user_password.txt
+  ftp_password:
+    file: ../secrets/ftp_password.txt
 
 networks:
   inception_net:

@@ -255,13 +255,6 @@ Beyond PID 1, writing highly optimized Dockerfiles comes down to keeping things 
 * **Combine Commands to Reduce Layers:** Every `RUN` instruction creates a new image layer, which increases the final image size. Group related setup steps using `&&` and backslashes `\`.
 * **Clean Up the Package Cache Instantly:** Never leave package manager leftovers behind. If using Alpine, use `apk add --no-cache`. If using Debian/Ubuntu, always run `rm -rf /var/lib/apt/lists/*` in the exact same `RUN` command where you installed the packages.
 
-
-## Chapter 4 :
-
-
-## Chapter 5 :
-
-
 ## Recourses
 
 [Docker 101: The Docker Components](https://www.sysdig.com/learn-cloud-native/docker-101-the-docker-components)

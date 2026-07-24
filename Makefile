@@ -33,6 +33,15 @@ build: init
 down:
 	$(COMPOSE) down
 
+stop:
+	$(COMPOSE) stop
+
+start:
+	$(COMPOSE) start
+
+status:
+	docker ps
+
 clean: down
 	$(COMPOSE) down --volumes --remove-orphans
 

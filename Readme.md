@@ -1,12 +1,12 @@
 *This project has been created as part of the 42 curriculum by abnsila.*
 
-# 🐳 Inception
+# Inception
 
 A multi-container System Administration infrastructure project built with **Docker** and **Docker Compose**. The core goal of this project is to virtualize a complete, secure, and production-ready Web Application Stack on an isolated Docker network built strictly from custom **Alpine Linux** base images.
 
 ---
 
-# 📚 Table of Contents
+# Table of Contents
 
 - [Description](#-description)
 - [System Architecture](#-system-architecture)
@@ -24,7 +24,7 @@ A multi-container System Administration infrastructure project built with **Dock
 
 ---
 
-# 📝 Description
+# Description
 
 The **Inception** project focuses on building a resilient web hosting infrastructure entirely managed through `docker-compose`. Each component service runs in its own dedicated, lightweight container and communicates through an internal virtual network.
 
@@ -42,7 +42,7 @@ The **Inception** project focuses on building a resilient web hosting infrastruc
 
 ---
 
-# 🏗️ System Architecture
+# System Architecture
 
 ```text
                                   [ Host Browser ]
@@ -75,7 +75,7 @@ The **Inception** project focuses on building a resilient web hosting infrastruc
 
 ---
 
-# 🚀 Instructions
+# Instructions
 
 ### Prerequisites
 
@@ -125,7 +125,7 @@ Here is a complete breakdown of your `Makefile` rules, followed by the updated R
 
 ---
 
-## 🛠️ Breakdown of Your `Makefile` Rules
+## Breakdown of Your `Makefile` Rules
 
 | Rule | Dependencies | What It Does Under the Hood |
 | --- | --- | --- |
@@ -189,7 +189,7 @@ make fclean && make
 
 ---
 
-# 🛠️ Technical & Design Choices
+# Technical & Design Choices
 
 * **Alpine Linux as Universal Base**: Every container is built on official Alpine Linux and penultimate stable version image (`alpine:3.23`) to minimize image size and reduce security attack surfaces.
 * **Docker Secrets over Environment Variables**: Credentials like database passwords and admin login keys are managed using Docker Secrets. They are mounted at runtime in temporary in-memory filesystems (`/run/secrets/`) rather than exposed as environment variables via `docker inspect`.
@@ -211,7 +211,7 @@ docker exec -it redis redis-cli
 
 ---
 
-# 📐 System Design Comparison
+# System Design Comparison
 
 ### 1. Virtual Machines vs Docker Containers
 
@@ -318,7 +318,7 @@ Containers are ephemeral. Without external storage, deleting a container deletes
 
 ---
 
-### 📌 Summary Table
+### Summary Table
 
 | Component | Recommended For |
 | --- | --- |
@@ -333,7 +333,7 @@ Containers are ephemeral. Without external storage, deleting a container deletes
 
 ---
 
-# 📖 Resources & AI Usage
+# Resources & AI Usage
 
 ### References & Documentation
 

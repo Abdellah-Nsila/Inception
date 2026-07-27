@@ -1,4 +1,4 @@
-FROM alpine:3.19
+FROM alpine:3.23
 
 # Install dependencies needed to download and extract Portainer
 RUN apk add --no-cache curl tar ca-certificates

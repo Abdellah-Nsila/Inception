@@ -11,7 +11,7 @@ Here is how to set it up cleanly from scratch using an **Alpine Dockerfile** (to
 Create a folder named `requirements/bonus/portainer/` and add a `Dockerfile`:
 
 ```dockerfile
-FROM alpine:3.19
+FROM alpine:3.23
 
 # Install dependencies needed to download and extract Portainer
 RUN apk add --no-cache curl tar ca-certificates

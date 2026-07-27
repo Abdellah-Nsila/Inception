@@ -15,7 +15,7 @@ Here is a simple, standard setup for an `adminer` container using Alpine and PHP
 Create a folder named `requirements/bonus/adminer/` and add a `Dockerfile`:
 
 ```dockerfile
-FROM alpine:3.19
+FROM alpine:3.23
 
 # Install PHP and the necessary MariaDB/MySQL drivers
 RUN apk update && apk add --no-cache \

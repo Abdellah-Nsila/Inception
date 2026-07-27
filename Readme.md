@@ -45,11 +45,11 @@ The **Inception** project focuses on building a resilient web hosting infrastruc
 # System Architecture
 
 ```text
-                                  [ Host Browser ]
-                                         │
-                   ┌─────────────────────┴─────────────────────┐
-                   │  HTTPS (Port 443)      FTP (Port 21)      │
-                   ▼                                           ▼
+[ Host Browser ]
+                                          │
+                   ┌──────────────────────┴──────────────────────┐
+                   │   HTTPS (Port 443)      FTP (Port 21)       │
+                   ▼                                             ▼
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │  Inception Stack (Docker Network: inception_net)                                       │
 │                                                                                        │
@@ -58,17 +58,24 @@ The **Inception** project focuses on building a resilient web hosting infrastruc
 │   │  (TLS v1.3)  │ ──Port 9000 │ (PHP 8.3 / WP-CLI)│          │   (Isolated Storage)  │   │
 │   └──────┬───────┘          └─────────┬─────────┘          └───────────────────────┘   │
 │          │                            │                                                │
-│          │ Shared Volume              │ TCP:6379                                       │
-│          │ (/var/www/html)            ▼                                                │
+│          ├─ Shared Volume             │ TCP:6379                                       │
+│          │  (/var/www/html)           ▼                                                │
 │          │                  ┌───────────────────┐                                      │
 │          ├─────────────────>│    Redis Cache    │                                      │
 │          │                  └───────────────────┘                                      │
 │          │                                                                             │
+│          │ HTTP:5173                                                                   │
+│          │ (/portfolio/)                                                               │
 │          ▼                                                                             │
 │   ┌──────────────┐          ┌───────────────────┐          ┌───────────────────────┐   │
-│   │  FTP Server  │          │   Adminer (Web UI)│          │ Portainer (Dashboard) │   │
-│   │   (vsftpd)   │          │    (Port 8080)    │          │      (Port 9000)      │   │
+│   │  Portfolio   │          │  Adminer (Web UI) │          │ Portainer (Dashboard) │   │
+│   │ (Vite React) │          │    (Port 8080)    │          │      (Port 9000)      │   │
 │   └──────────────┘          └───────────────────┘          └───────────────────────┘   │
+│                                                                                        │
+│   ┌──────────────┐                                                                     │
+│   │  FTP Server  │                                                                     │
+│   │   (vsftpd)   │                                                                     │
+│   └──────────────┘                                                                     │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 
 ```
@@ -287,34 +294,69 @@ Container networking affects isolation, security, and performance.
 
 Containers are ephemeral. Without external storage, deleting a container deletes all modified filesystem state.
 
+#### Docker Volumes
+
+### 1. Standard Docker Volume (Docker Managed)
+
+* **Who controls the location?** Docker controls it completely.
+* **Where does it live?** Deep inside `/var/lib/docker/volumes/` on Linux.
+* **Why do you need root (`sudo`)?** Because `/var/lib/docker/` is owned by the `root` user. You can't just `cd` into it or edit files with VS Code as a regular user.
+* **How do you interact with it?** You manage it using Docker commands like `docker volume ls`, `docker volume inspect`, and `docker volume rm`.
+
+---
+
+### 2. Standard Bind Mount (User Managed)
+
+* **Who controls the location?** You.
+* **Where does it live?** **Any directory or single file** you choose on your host machine (e.g., `/home/abnsila/my_project`, `/tmp/logs`, or even `/etc/hosts`).
+* **Why is it useful?** You own the host directory, so you can open it directly in VS Code, run host scripts on it, or inspect files with standard terminal commands without needing `sudo`.
+
+---
+
+### Comparison
+
 ```text
-                 HOST FILESYSTEM
-
-     Bind Mount                     Docker Volume
-
-+-------------------+         +---------------------------+
-| /home/user/srcs/  |         | /var/lib/docker/volumes/ |
-+---------+---------+         +------------+--------------+
-          |                                |
-          +---------------+----------------+
-                          |
-                    CONTAINER
-                  +---------------+
-                  | /var/www/html |
-                  +---------------+
+                  STANDARD DOCKER VOLUME                           STANDARD BIND MOUNT
+           
+           ┌─────────────────────────────────┐             ┌─────────────────────────────────┐
+           │      Host OS Filesystem         │             │      Host OS Filesystem         │
+           │                                 │             │                                 │
+           │   /var/lib/docker/volumes/      │             │    /home/abnsila/my_folder/     │
+           │   └── db_data/_data/            │             │    └── index.php                │
+           │       (Requires root/sudo)      │             │        (Accessible by user)    │
+           └────────────────┬────────────────┘             └────────────────┬────────────────┘
+                            │                                               │
+               Managed by Docker Daemon                         Direct Mount to Host Path
+                            │                                               │
+                            ▼                                               ▼
+               ┌─────────────────────────┐                     ┌─────────────────────────┐
+               │    Docker Container     │                     │    Docker Container     │
+               │    (/var/lib/mysql)     │                     │    (/var/www/html)      │
+               └─────────────────────────┘                     └─────────────────────────┘
 
 ```
 
-#### Docker Volumes
+---
 
-* **Management**: Managed entirely by Docker in host storage areas (e.g., `/var/lib/docker/volumes/`).
-* **Advantages**: Portable, safe from accidental human edits, easily backed up, and optimized for high-performance databases in production.
+### The Inception Hybrid Trick
 
-#### Bind Mounts
+The reason `docker-compose.yml` uses:
 
-* **Management**: References any explicit file or directory path directly on the host machine (e.g., `./srcs/nginx.conf:/etc/nginx/nginx.conf`).
-* **Advantages**: Excellent for development workflows; provides real-time file synchronization without requiring container rebuilds.
-* **Drawbacks**: Less isolated; container actions directly alter host files and permissions.
+```yaml
+volumes:
+  wordpress_vol:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/abnsila/data/wordpress'
+
+```
+
+...is because it **combines the best of both worlds**:
+
+1. It registers as a **Docker Volume** (`wordpress_vol`) so Docker manages its lifecycle and metadata.
+2. It uses `o: bind` to point the storage location to your custom host path (`/home/abnsila/data/wordpress`) so you can access all the files on your host without `sudo`!
 
 ---
 

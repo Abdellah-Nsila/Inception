@@ -80,7 +80,7 @@ services:
   portfolio:
     image: "portfolio"
     container_name: portfolio
-    build: ./requirements/bonus/protofolio
+    build: ./requirements/bonus/portfolio
     networks:
       - inception_net
     environment:
@@ -102,7 +102,9 @@ services:
       - inception_net
     volumes:
       - wordpress_vol:/var/www/html
+    init: true
     restart: unless-stopped
+
 
   adminer:
     build: ./requirements/bonus/adminer
@@ -114,6 +116,7 @@ services:
       - inception_net
     depends_on:
       - mariadb
+    init: true
     restart: unless-stopped
 
   portainer:

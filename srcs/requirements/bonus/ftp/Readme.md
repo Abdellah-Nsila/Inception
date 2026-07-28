@@ -68,7 +68,7 @@ local_umask=022
 * **What it does:** `write_enable=YES` allows users to upload and delete files (otherwise it would be read-only). `local_umask=022` is a subtraction mask that sets permissions for newly uploaded files.
 * **Example:** When you upload a new photo, this ensures the file gets a permission state of `644` (You can read/write it, but Nginx/WordPress can only read it). This prevents uploaded files from being automatically marked as executable scripts, which is a major security hazard.
 
-### 4. The Chroot Jail (The Most Important Security Rule)
+### 4. The Chroot Jail (The Most Important Security Rule) (if we specify a location this becaome useless i think ?)
 
 ```ini
 chroot_local_user=YES

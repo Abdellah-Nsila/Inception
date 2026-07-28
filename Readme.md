@@ -8,19 +8,23 @@ A multi-container System Administration infrastructure project built with **Dock
 
 # Table of Contents
 
-- [Description](#-description)
-- [System Architecture](#-system-architecture)
-- [Instructions](#-instructions)
-  - [Prerequisites](#prerequisites)
-  - [Build and Execution](#build-and-execution)
-  - [Management Commands](#management-commands)
-- [Technical & Design Choices](#-technical--design-choices)
-- [System Design Comparison](#-system-design-comparison)
-  - [1. Virtual Machines vs Docker Containers](#1-virtual-machines-vs-docker-containers)
-  - [2. Docker Secrets vs Environment Variables](#2-docker-secrets-vs-environment-variables)
-  - [3. Docker Network vs Host Network](#3-docker-network-vs-host-network)
-  - [4. Docker Volumes vs Bind Mounts](#4-docker-volumes-vs-bind-mounts)
-- [Resources & AI Usage](#-resources--ai-usage)
+* [Description](https://www.google.com/search?q=%23-description)
+* [System Architecture](https://www.google.com/search?q=%23-system-architecture)
+* [Instructions](https://www.google.com/search?q=%23-instructions)
+* [Prerequisites](https://www.google.com/search?q=%23prerequisites)
+* [Build and Execution](https://www.google.com/search?q=%23build-and-execution)
+* [Management Commands](https://www.google.com/search?q=%23management-commands)
+
+
+* [Technical & Design Choices](https://www.google.com/search?q=%23-technical--design-choices)
+* [System Design Comparison](https://www.google.com/search?q=%23-system-design-comparison)
+* [1. Virtual Machines vs Docker Containers](https://www.google.com/search?q=%231-virtual-machines-vs-docker-containers)
+* [2. Docker Secrets vs Environment Variables](https://www.google.com/search?q=%232-docker-secrets-vs-environment-variables)
+* [3. Docker Network vs Host Network](https://www.google.com/search?q=%233-docker-network-vs-host-network)
+* [4. Docker Volumes vs Bind Mounts](https://www.google.com/search?q=%234-docker-volumes-vs-bind-mounts)
+
+
+* [Resources & AI Usage](https://www.google.com/search?q=%23-resources--ai-usage)
 
 ---
 
@@ -29,53 +33,118 @@ A multi-container System Administration infrastructure project built with **Dock
 The **Inception** project focuses on building a resilient web hosting infrastructure entirely managed through `docker-compose`. Each component service runs in its own dedicated, lightweight container and communicates through an internal virtual network.
 
 ### Core Stack Features
+
 * **Nginx**: Dedicated web server acting as the sole entry point, configured with TLS v1.2/v1.3 encryption (HTTPS on port 443).
 * **WordPress + PHP-FPM**: Modern WordPress core instance backed by PHP-FPM for dynamic server-side rendering.
 * **MariaDB**: Relational SQL database powering WordPress with isolated persistent storage.
 
 ### Bonus Services Included
-* **Redis Cache**: In-memory data store providing object caching for WordPress database queries.
-* **FTP Server (vsftpd)**: FTP interface allowing remote file management inside the shared web application volume.
-* **Adminer**: Single-file web UI for database management and query inspection.
-* **Portainer**: Docker management platform giving a visual UI to monitor live logs, CPU/RAM usage, and active containers.
-* **Portfolio Web Page**: Static site service running a custom developer portfolio preview.
+
+* **Redis Cache**: In-memory key-value data store providing object caching for WordPress database queries.
+* **FTP Server (vsftpd)**: FTP interface allowing direct remote file management inside the shared web application volume.
+* **Adminer**: Single-file web UI for database management and query inspection routed through Nginx over HTTPS (`/adminer`).
+* **Portainer**: Docker management platform giving a visual UI to monitor live logs, container states, and stack health routed through Nginx over HTTPS (`/portainer`).
+* **Portfolio Web Page**: Standalone developer portfolio website running via Vite/React microservice and routed through Nginx over HTTPS (`/portfolio`).
 
 ---
 
-# System Architecture
+## System Architecture
+
+### Project Directory Structure
 
 ```text
-[ Host Browser ]
-                                          │
-                   ┌──────────────────────┴──────────────────────┐
-                   │   HTTPS (Port 443)      FTP (Port 21)       │
-                   ▼                                             ▼
+Inception/
+├── DEV_DOC.md
+├── Makefile
+├── Readme.md
+├── USER_DOC.md
+├── secrets/
+│   ├── db_password.txt
+│   ├── db_root_password.txt
+│   ├── ftp_password.txt
+│   ├── wp_admin_password.txt
+│   └── wp_user_password.txt
+└── srcs/
+    ├── .env
+    ├── docker-compose.yml
+    └── requirements/
+        ├── bonus/
+        │   ├── adminer/
+        │   │   ├── Dockerfile
+        │   ├── ftp/
+        │   │   ├── Dockerfile
+        │   │   ├── conf/
+        │   │   │   └── vsftpd.conf
+        │   │   └── tools/
+        │   │       └── ftp_start.sh
+        │   ├── portainer/
+        │   │   ├── Dockerfile
+        │   ├── portfolio/
+        │   │   ├── Dockerfile
+        │   │   ├── src/
+        │   │   ├── ...
+        │   └── redis/
+        │       ├── Dockerfile
+        │       └── conf/
+        │           └── redis.conf
+        ├── mariadb/
+        │   ├── Dockerfile
+        │   ├── conf/
+        │   │   └── mariadb-server.cnf
+        │   └── tools/
+        │       └── mariadb_start.sh
+        ├── nginx/
+        │   ├── Dockerfile
+        │   └── conf/
+        │       └── nginx.conf
+        └── wordpress/
+            ├── Dockerfile
+            ├── conf/
+            │   └── www.conf
+            └── tools/
+                └── wordpress_start.sh
+
+```
+
+### System Architecture Diagram
+
+```text
+[ Host Browser / Client ]
+                                   │
+         ┌─────────────────────────┴─────────────────────────┐
+         │                                                   │
+         │  HTTPS (Port 443)                      FTP (Ports 21 & 30000-30005)
+         ▼                                                   ▼
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │  Inception Stack (Docker Network: inception_net)                                       │
 │                                                                                        │
-│   ┌──────────────┐          ┌───────────────────┐          ┌───────────────────────┐   │
-│   │    Nginx     │ ──FastCGI│  WordPress + FPM  │ ──TCP:3306  │        MariaDB        │   │
-│   │  (TLS v1.3)  │ ──Port 9000 │ (PHP 8.3 / WP-CLI)│          │   (Isolated Storage)  │   │
-│   └──────┬───────┘          └─────────┬─────────┘          └───────────────────────┘   │
-│          │                            │                                                │
-│          ├─ Shared Volume             │ TCP:6379                                       │
-│          │  (/var/www/html)           ▼                                                │
-│          │                  ┌───────────────────┐                                      │
-│          ├─────────────────>│    Redis Cache    │                                      │
-│          │                  └───────────────────┘                                      │
-│          │                                                                             │
-│          │ HTTP:5173                                                                   │
-│          │ (/portfolio/)                                                               │
-│          ▼                                                                             │
-│   ┌──────────────┐          ┌───────────────────┐          ┌───────────────────────┐   │
-│   │  Portfolio   │          │  Adminer (Web UI) │          │ Portainer (Dashboard) │   │
-│   │ (Vite React) │          │    (Port 8080)    │          │      (Port 9000)      │   │
-│   └──────────────┘          └───────────────────┘          └───────────────────────┘   │
+│   ┌────────────────────────────────────────────────────────────────────────────────┐   │
+│   │                                NGINX (TLS v1.3)                                │   │
+│   │                          Exposed to Host on Port 443                           │   │
+│   └───────┬──────────────┬─────────────────────────┬──────────────────────┬────────┘   │
+│           │              │                         │                      │            │
+│  FastCGI  │              │ HTTP Proxy              │ HTTP Proxy           │ HTTP Proxy │
+│  Port 9000│              │ Port 5173               │ Port 8080            │ Port 9000  │
+│           ▼              ▼                         ▼                      ▼            │
+│   ┌──────────────┐┌──────────────┐         ┌──────────────┐       ┌──────────────┐     │
+│   │ WordPress    ││ Portfolio    │         │ Adminer      │       │ Portainer    │     │
+│   │ (PHP-FPM)    ││ (Vite/React) │         │ (DB Web UI)  │       │ (Dashboard)  │     │
+│   └──────┬───────┘└──────────────┘         └──────┬───────┘       └──────────────┘     │
+│          │                                        │                                    │
+│          ├───────────────────────┐                │                                    │
+│          │ Redis Protocol        │ TCP:3306       │ TCP:3306                           │
+│          │ Port 6379             │                │                                    │
+│          ▼                       ▼                │                                    │
+│   ┌──────────────┐        ┌───────────────────────┴┐                                   │
+│   │ Redis Cache  │        │ MariaDB                │                                   │
+│   │ (In-Memory)  │        │ (Database Engine)      │                                   │
+│   └──────────────┘        └────────────────────────┘                                   │
 │                                                                                        │
-│   ┌──────────────┐                                                                     │
-│   │  FTP Server  │                                                                     │
-│   │   (vsftpd)   │                                                                     │
-│   └──────────────┘                                                                     │
+│                                                                                        │
+│   ┌────────────────────────────────────────────────────────────────────────────────┐   │
+│   │ FTP Server (vsftpd)                                                            │   │
+│   │ Directly published: Ports 21 & 30000-30005 -> Mounts Volume: wordpress_vol     │   │
+│   └────────────────────────────────────────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 
 ```
@@ -90,12 +159,11 @@ The **Inception** project focuses on building a resilient web hosting infrastruc
 * **Packages**: `docker`, `docker-compose-plugin` (or `docker-compose`), `make`, `curl`
 * **Local Domain Configuration**:
 Add your domain alias to `/etc/hosts`:
+
 ```bash
 127.0.0.1 abnsila.42.fr
 
 ```
-
-
 
 ---
 
@@ -104,31 +172,32 @@ Add your domain alias to `/etc/hosts`:
 The infrastructure is fully automated using a top-level `Makefile`.
 
 1. **Clone the Repository:**
+
 ```bash
-git clone [https://github.com/Abdellah-Nsila/Inception.git](https://github.com/Abdellah-Nsila/Inception.git)
+git clone https://github.com/Abdellah-Nsila/Inception.git
 cd Inception
 
 ```
 
-
 2. **Prepare Environment Credentials:**
-Ensure sensitive passwords are listed inside the `secrets/` directory (`db_root_password.txt`, `db_password.txt`, etc.).
+Ensure sensitive passwords are listed inside the `secrets/` directory (`db_root_password.txt`, `db_password.txt`, `ftp_password.txt`, `wp_admin_password.txt`, `wp_user_password.txt`).
 3. **Start the Infrastructure:**
+
 ```bash
 make
 
 ```
 
-
 *This command creates host data directories, builds base images sequentially without cache issues, and starts all containers in detached mode.*
-4. **Access the Services:**
-* **Main Web Site**: `https://abnsila.42.fr`
-* **Adminer DB Client**: `http://abnsila.42.fr:8080`
-* **Portainer Container UI**: `http://abnsila.42.fr:9000`
-* **FTP File Access**: `curl -u ftp_user:ftp_password ftp://abnsila.42.fr:21/`
 
----
-Here is a complete breakdown of your `Makefile` rules, followed by the updated README section and how to fix/test your FTP connection.
+4. **Access the Services via HTTPS:**
+
+* **Main Web Site**: `[https://abnsila.42.fr](https://abnsila.42.fr)`
+* **WordPress Admin Dashboard**: `[https://abnsila.42.fr/wp-admin](https://abnsila.42.fr/wp-admin)`
+* **Adminer DB Client**: `[https://abnsila.42.fr/adminer](https://abnsila.42.fr/adminer)`
+* **Portainer Container UI**: `[https://abnsila.42.fr/portainer](https://abnsila.42.fr/portainer)`
+* **Personal Portfolio Web Page**: `[https://abnsila.42.fr/portfolio](https://abnsila.42.fr/portfolio)`
+* **FTP File Access**: `curl -u ftp_user:ftp_password ftp://abnsila.42.fr:21/`
 
 ---
 
@@ -153,40 +222,42 @@ Here is a complete breakdown of your `Makefile` rules, followed by the updated R
 ### Management Commands
 
 * **Build & Start Services**:
+
 ```bash
-  make
+make
 
 ```
 
 * **Start Stopped Services**:
+
 ```bash
 make start
 
 ```
 
-
 * **Stop Running Services**:
+
 ```bash
 make stop
 
 ```
 
-
 * **View Active Containers**:
+
 ```bash
 make status
 
 ```
 
-
 * **View Real-Time Logs**:
+
 ```bash
 make logs
 
 ```
 
-
 * **Clean Volumes and Rebuild Stack**:
+
 ```bash
 make re
 # or
@@ -200,21 +271,33 @@ make fclean && make
 
 * **Alpine Linux as Universal Base**: Every container is built on official Alpine Linux and penultimate stable version image (`alpine:3.23`) to minimize image size and reduce security attack surfaces.
 * **Docker Secrets over Environment Variables**: Credentials like database passwords and admin login keys are managed using Docker Secrets. They are mounted at runtime in temporary in-memory filesystems (`/run/secrets/`) rather than exposed as environment variables via `docker inspect`.
-* **Zero Pre-made Docker Hub App Images**: Custom Dockerfiles were written from scratch for every service (Nginx, MariaDB, WordPress, FTP, Adminer, Portainer). No pre-packaged container images (e.g., `bitnami/wordpress`) are used.
-* **To test Ftp:**
-- Upload a file via FTP
+* **Zero Pre-made Docker Hub App Images**: Custom Dockerfiles were written from scratch for every service (Nginx, MariaDB, WordPress, FTP, Adminer, Portainer, Portfolio, Redis). No pre-packaged container images (e.g., `bitnami/wordpress`) are used.
+* **Testing FTP Integration:**
+1. Upload a file via FTP:
 ```sh
 echo "<h1>FTP Works!</h1>" > test.html
 curl -T test.html -u ftp_user:ftp_password ftp://abnsila.42.fr:21/
+
 ```
-- Verify the file exists inside WordPress via Nginx in your browser:
+
+
+2. Verify the file exists inside WordPress via Nginx in your browser:
 ```sh
 https://abnsila.42.fr/test.html
+
 ```
-* **To test Redis:**
+
+
+
+
+* **Testing Redis Integration:**
 ```sh
-docker exec -it redis redis-cli
+docker exec -it redis redis-cli ping
+# Expected output: PONG
+
 ```
+
+
 
 ---
 
@@ -294,9 +377,7 @@ Container networking affects isolation, security, and performance.
 
 Containers are ephemeral. Without external storage, deleting a container deletes all modified filesystem state.
 
-#### Docker Volumes
-
-### 1. Standard Docker Volume (Docker Managed)
+#### 1. Standard Docker Volume (Docker Managed)
 
 * **Who controls the location?** Docker controls it completely.
 * **Where does it live?** Deep inside `/var/lib/docker/volumes/` on Linux.
@@ -305,7 +386,7 @@ Containers are ephemeral. Without external storage, deleting a container deletes
 
 ---
 
-### 2. Standard Bind Mount (User Managed)
+#### 2. Standard Bind Mount (User Managed)
 
 * **Who controls the location?** You.
 * **Where does it live?** **Any directory or single file** you choose on your host machine (e.g., `/home/abnsila/my_project`, `/tmp/logs`, or even `/etc/hosts`).
@@ -313,7 +394,7 @@ Containers are ephemeral. Without external storage, deleting a container deletes
 
 ---
 
-### Comparison
+#### Comparison
 
 ```text
                   STANDARD DOCKER VOLUME                           STANDARD BIND MOUNT
@@ -338,7 +419,7 @@ Containers are ephemeral. Without external storage, deleting a container deletes
 
 ---
 
-### The Inception Hybrid Trick
+#### The Inception Hybrid Trick
 
 The reason `docker-compose.yml` uses:
 
@@ -393,4 +474,4 @@ In accordance with 42 project regulations, Artificial Intelligence tools were ut
 
 1. **Technical Documentation & Verification**: Reading official manual pages and confirming runtime flag behaviors.
 2. **Debugging Process Signals & Logs**: Troubleshooting service exit codes, signal propagation (`SIGTERM` vs `SIGQUIT`), and permissions behavior across shared volume mounts.
-3. **Architecture Best Practices**: Reviewing optimal approaches for multi-container coordination using Docker Compose and Docker Secrets.
+3. **Architecture Best Practices**: Reviewing optimal approaches for multi-container coordination using Docker Compose and Docker Secrets, in addition to make Markdown Docs `.md`.
